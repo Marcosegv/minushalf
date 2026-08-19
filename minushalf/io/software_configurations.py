@@ -16,8 +16,7 @@ class SoftwareConfigurations(MinushalfYamlTags):
     involved in the workflow:
         - pw.x
         - projwfc.x
-        - ld1.x
-        - virtual_v2.x
+        - scf input file
     """
 
     def __init__(
@@ -43,12 +42,6 @@ class SoftwareConfigurations(MinushalfYamlTags):
 
             projwfc_command (list):
                 QE projwfc.x command.
-
-            ld1_command (list):
-                QE ld1.x command.
-
-            virtual_v2_command (list):
-                QE virtual_v2.x command.
 
             scf_input (str):
                 QE SCF input file.

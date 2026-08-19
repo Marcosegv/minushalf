@@ -11,6 +11,8 @@ from minushalf.utils.simple_correction_indexes import get_simple_correction_inde
 from minushalf.utils.cut_initial_guess_methods import (CutInitialGuessMethods)
 from minushalf.utils.band_structure import BandStructure
 from minushalf.utils.projection_to_df import projection_to_df
+from minushalf.utils.software_output import get_output_filenames
+
 
 
 def _get_vbm_projection(factory: SoftwaresAbstractFactory, is_indirect: bool) -> pd.DataFrame:
