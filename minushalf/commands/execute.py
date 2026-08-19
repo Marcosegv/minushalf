@@ -15,7 +15,7 @@ from minushalf.utils.cli_messages import welcome_message, end_message
 from minushalf.utils.get_correction_params import get_valence_correction_params, get_conduction_correction_params
 
 from minushalf.softwares.softwares import Softwares, get_software_factory
-from minushalf.corrections.correction import (DFTCorrection)
+from minushalf.corrections.correction import (DFTCorrection, QECorrection)
 from minushalf.io.minushalf_yaml_default_configuration import CorrectionDefaultParams
 
 
@@ -79,7 +79,7 @@ def execute(quiet: bool):
     logger.info("Reading minushalf.yaml file")
     minushalf_yaml = MinushalfYaml.from_file()
     correction_factory_chooser = {Softwares.vasp.value: DFTCorrection,
-                                  Softwares.qe.value: DFTCorrection}
+                                  Softwares.qe.value: QECorrection}
 
     software_name = minushalf_yaml.get_software_name()
     correction = correction_factory_chooser[software_name]

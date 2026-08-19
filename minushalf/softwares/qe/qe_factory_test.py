@@ -92,9 +92,11 @@ def test_get_runner():
     """
     Test get vasp runner class
     """
-    command = ['mpirun', '-np', '4', 'pw.x']
+    pw_command = ['mpirun', '-np', '4', 'pw.x']
+    projwfc_command = ['mpirun', '-np', '4', 'projwfc.x']
+    scf_input = 'scf.in'
     factory = QE()
-    runner = factory.get_runner(command)
+    runner = factory.get_runner(pw_command,projwfc_command,scf_input)
     assert isinstance(runner, QERunner)
 
 

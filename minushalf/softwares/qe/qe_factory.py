@@ -137,14 +137,25 @@ class QE(SoftwaresAbstractFactory):
         """
         return self._load_pwscf(filename, base_path).eigenvalues
 
-    def get_runner(self, command: List[str]):
+    def get_runner(
+        self,
+        pw_command: List[str],
+        projwfc_command: List[str],
+        scf_input: str,
+    ):
         """
-        Return the class
-        that runs QE pw.x
-        > Missing implementation to run ld1.x and virtual_v2.x
+        Return the class that runs the Quantum ESPRESSO workflow.
+
+        The runner currently executes:
+            1. pw.x using scf_input
+            2. projwfc.x using the generated proj.in
+
         """
-        return QERunner(command)
-    
+        return QERunner(
+            pw_command=pw_command,
+            projwfc_command=projwfc_command,
+            scf_input=scf_input,
+        )
     
     def get_nearest_neighbor_distance(self,
                                       ion_index: str,
