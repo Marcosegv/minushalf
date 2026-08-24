@@ -29,17 +29,17 @@ class QERunner(Runner):
         self,
         pw_command: List[str],
         projwfc_command: List[str],
-        scf_input: str,
+        input_file: str,
     ):
         """
         Args:
             pw_command: Command used to execute pw.x.
             projwfc_command: Command used to execute projwfc.x.
-            scf_input: Path to the SCF input file.
+            input_file: Path to the SCF input file.
         """
         self.pw_command = pw_command
         self.projwfc_command = projwfc_command
-        self.scf_input = scf_input
+        self.input_file = input_file
 
     def run(self, cwd: str = "."):
         """
@@ -54,7 +54,7 @@ class QERunner(Runner):
         Run pw.x using the SCF input file.
         """
 
-        scf_filename = Path(self.scf_input).name
+        scf_filename = Path(self.input_file).name
 
         command = (
             f"{shlex.join(self.pw_command)} "
@@ -76,7 +76,7 @@ class QERunner(Runner):
         file. The remaining PROJWFC parameters are fixed constants.
         """
 
-        scf_filename = Path(self.scf_input).name
+        scf_filename = Path(self.input_file).name
         scf_path = Path(cwd) / scf_filename
 
         with open(scf_path, "r") as scf_file:

@@ -242,6 +242,7 @@ class BandStructure():
 
     @staticmethod
     def create(software_module: SoftwaresAbstractFactory,
+               filenames: dict,
                base_path: str = '.'):
         """
         Create band structure class from ab inition results
@@ -256,12 +257,20 @@ class BandStructure():
                 band_strucure (BandStructure): Class with band structure informations
 
         """
-        eigenvalues = software_module.get_eigenvalues(base_path=base_path)
-        fermi_energy = software_module.get_fermi_energy(base_path=base_path)
-        atoms_map = software_module.get_atoms_map(base_path=base_path)
-        num_bands = software_module.get_number_of_bands(base_path=base_path)
+        eigenvalues          = software_module.get_eigenvalues(
+                                filename=filenames["eigenvalues"],
+                                base_path=base_path)
+        fermi_energy         = software_module.get_fermi_energy(
+                                filename=filenames["fermi_energy"],
+                                base_path=base_path)
+        atoms_map            = software_module.get_atoms_map(
+                                filename=filenames["atoms_map"],
+                                base_path=base_path)
+        num_bands            = software_module.get_number_of_bands(
+                                filename=filenames["number_of_bands"],
+                                base_path=base_path)
         band_projection_file = software_module.get_band_projection_class(
-            base_path=base_path)
-
+                                filename=filenames["band_projection"],
+                                base_path=base_path)
         return BandStructure(eigenvalues, fermi_energy, atoms_map, num_bands,
                              band_projection_file)

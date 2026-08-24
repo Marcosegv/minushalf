@@ -27,7 +27,7 @@ class SoftwareConfigurations(MinushalfYamlTags):
             projwfc_command: list = None,
             ld1_command: list = None,
             virtual_v2_command: list = None,
-            scf_input: str = None,
+            input_file: str = None,
     ) -> None:
         """
         Args:
@@ -43,8 +43,8 @@ class SoftwareConfigurations(MinushalfYamlTags):
             projwfc_command (list):
                 QE projwfc.x command.
 
-            scf_input (str):
-                QE SCF input file.
+            input_file (str):
+                Input files needed for calculation (e.g. INCAR for VASP, input of pw.x for QE)
         """
         self.software_name = software_name
 
@@ -56,7 +56,9 @@ class SoftwareConfigurations(MinushalfYamlTags):
         self.projwfc_command = projwfc_command
         self.ld1_command = ld1_command
         self.virtual_v2_command = virtual_v2_command
-        self.scf_input = scf_input
+
+        # shared parameter
+        self.input_file = input_file
 
     @property
     def command(self) -> list:
@@ -126,14 +128,15 @@ class SoftwareConfigurations(MinushalfYamlTags):
 
         if self.software_name == Softwares.vasp.value:
             # VASP-specific
-            return [self._command]
+            return [self._command,
+                    self.input_file]
 
         elif self.software_name == Softwares.qe.value:
             # QE-specific
             return [
                 self.pw_command,
                 self.projwfc_command,
-                self.scf_input,
+                self.input_file,
             ]
 
     def to_dict(self):
@@ -148,6 +151,7 @@ class SoftwareConfigurations(MinushalfYamlTags):
             # VASP-specific
             return {
                 "command": self._command,
+                "input_file": self.input_file,
             }
 
         elif self.software_name == Softwares.qe.value:
@@ -155,5 +159,5 @@ class SoftwareConfigurations(MinushalfYamlTags):
             return {
                 "pw_command": self.pw_command,
                 "projwfc_command": self.projwfc_command,
-                "scf_input": self.scf_input,
+                "input_file": self.input_file,
             }

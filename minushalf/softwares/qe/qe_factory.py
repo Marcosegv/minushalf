@@ -141,20 +141,20 @@ class QE(SoftwaresAbstractFactory):
         self,
         pw_command: List[str],
         projwfc_command: List[str],
-        scf_input: str,
+        input_file: str,
     ):
         """
         Return the class that runs the Quantum ESPRESSO workflow.
 
         The runner currently executes:
-            1. pw.x using scf_input
+            1. pw.x using input_file
             2. projwfc.x using the generated proj.in
 
         """
         return QERunner(
             pw_command=pw_command,
             projwfc_command=projwfc_command,
-            scf_input=scf_input,
+            input_file=input_file,
         )
     
     def get_nearest_neighbor_distance(self,

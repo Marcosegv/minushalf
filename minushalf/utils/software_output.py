@@ -12,7 +12,8 @@ import glob
 
 def get_output_filenames(software: str,
                          input_name: str = None,
-                         base_path: str = None) -> dict:
+                         base_path: str = None,
+                         atom: str = None) -> dict:
     """
     Returns a dict of resolved output filenames for each factory method,
     given the software name and optionally a software input file path.
@@ -21,6 +22,9 @@ def get_output_filenames(software: str,
         software       (str): software name, e.g. 'VASP' or 'QE'
         input_name (str): path to the software input file (required for QE)
         base_path      (str): base directory for relative paths
+        atom           (str): chemical symbol e.g. 'Si'. If provided and
+                              software is QE, resolves the UPF path for
+                              that element from the ATOMIC_SPECIES card.
 
     Returns:
         filenames (dict): keys match factory method names, values are
@@ -66,6 +70,12 @@ def get_output_filenames(software: str,
 
         xml_file = os.path.join(xml_dir, f"{prefix}.xml")
 
+        # Resolve UPF path for the requested atom, or None if not requested
+        if atom is not None:
+            potential = _get_upf_for_atom(input_name, atom)
+        else:
+            potential = None
+
         filenames = {
             "eigenvalues":       xml_file,
             "fermi_energy":      xml_file,
@@ -74,7 +84,7 @@ def get_output_filenames(software: str,
             "number_of_kpoints": xml_file,
             "band_projection":   _find_projwfc_up(input_dir),
             "nearest_neighbor":  xml_file,
-            "potential":         None,   # supplied per-element, not from prefix
+            "potential":         potential,
         }
 
     else:
@@ -84,6 +94,57 @@ def get_output_filenames(software: str,
         )
 
     return filenames
+
+
+def _get_upf_for_atom(input_name_path: str, atom: str) -> str:
+    """
+    Reads a QE input file and returns the UPF filename for the
+    requested chemical symbol, as declared in the ATOMIC_SPECIES card.
+
+    Args:
+        input_name_path (str): path to the QE input file (e.g. scf.in)
+        atom            (str): chemical symbol to look up, e.g. 'Si'
+
+    Returns:
+        upf_path (str): path to the UPF file, resolved relative to the
+                        directory of the input file.
+
+    Raises:
+        Exception: if the atom is not found in ATOMIC_SPECIES.
+    """
+    in_atomic_species = False
+
+    with open(input_name_path) as fh:
+        for line in fh:
+            stripped = line.strip()
+
+            # Detect the start of the ATOMIC_SPECIES card
+            if stripped.upper() == "ATOMIC_SPECIES":
+                in_atomic_species = True
+                continue
+
+            if not in_atomic_species:
+                continue
+
+            # Any card name or namelist start signals end of ATOMIC_SPECIES
+            if stripped.startswith("&") or stripped.upper() in (
+                "ATOMIC_POSITIONS", "K_POINTS",
+                "CELL_PARAMETERS", "CONSTRAINTS",
+                "OCCUPATIONS", "ATOMIC_FORCES"
+            ):
+                break
+
+            # Each line: Symbol  Mass  UPF_filename
+            parts = stripped.split()
+            if len(parts) >= 3 and parts[0] == atom:
+                upf_filename = parts[2]
+                # Resolve relative to the input file's directory
+                input_dir = os.path.dirname(os.path.abspath(input_name_path))
+                return os.path.join(input_dir, upf_filename)
+
+    raise Exception(
+        f"Atom '{atom}' not found in ATOMIC_SPECIES card of '{input_name_path}'."
+    )
 
 
 def _get_prefix_and_outdir(input_name_path: str) -> tuple:
@@ -125,7 +186,6 @@ def _get_prefix_and_outdir(input_name_path: str) -> tuple:
 
     if prefix is None:
         prefix = "pwscf"
-
 
     return prefix, outdir
 
