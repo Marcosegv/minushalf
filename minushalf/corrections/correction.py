@@ -511,14 +511,9 @@ class QECorrection(Correction):
         is_conduction: bool,
         correction_indexes: dict,
         divide_character: list,
-        software_input: str,           # path to scf.in — needed to resolve prefix/outdir
     ):
         """
         Same parameters as DFTCorrection with two additions:
-
-        software_input (str): path to the QE input file (e.g. scf.in).
-            Used to resolve prefix and outdir for factory method calls,
-            mirroring the --input-name option in the CLI commands.
 
         potential_filename (str): for QE this is the UPF file extension
             convention used in potential_folder. Files are expected to be
@@ -546,42 +541,41 @@ class QECorrection(Correction):
         self.input_files              = input_files
         self.indirect                 = indirect
         self.divide_character         = divide_character
-        self.software_input           = software_input
 
     @property
     def potential_folder(self) -> str:
+        """
+        Returns:
+            Name of the folder that helds all the potential files
+            initially not corrected.
+        """
         return self._potential_folder
+
 
     @potential_folder.setter
     def potential_folder(self, path: str) -> None:
         """
-        Verify that the folder exists and contains a .upf file
-        for every atom in self.atoms.
-        Files are expected as {Symbol}.upf (e.g. Al.upf, N.upf).
-        """
-        for atom in self.atoms:
-            filename = f"{atom}.upf"
-            abs_path = os.path.join(path, filename)
-            if not os.path.exists(abs_path):
-                logger.error("Potential folder incomplete")
-                raise FileNotFoundError(
-                    f"Potential folder lacks {filename}."
-                )
-        self._potential_folder = path
+        Verify that the potential file exists inside the potential folder.
 
+        The potential filename is provided by self.potential_filename.
+        """
+        abs_path = os.path.join(path, self.potential_filename)
+
+        if not os.path.exists(abs_path):
+            logger.error("Potential folder incomplete")
+            raise FileNotFoundError(
+                f"Potential folder lacks {self.potential_filename}."
+            )
+
+        self._potential_folder = path
     # ------------------------------------------------------------------ #
     #  Public entry point — mirrors DFTCorrection.execute                  #
     # ------------------------------------------------------------------ #
 
     def execute(self) -> tuple:
         """
-        Execute the QE correction algorithm.
-        Identical flow to DFTCorrection.execute:
-          1. Create correction subfolder
-          2. Copy uncorrected potfiles
-          3. Compute sum of correction percentuals
-          4. For each (symbol, orbital), find the best cut
-          5. Return (cuts_per_atom_orbital, gap)
+        Execute the Qunatum ESPRESSO correction algorithm.
+        
         """
         self.root_folder = os.path.join(self.root_folder, self.correction_type)
         if os.path.exists(self.root_folder):
@@ -633,22 +627,22 @@ class QECorrection(Correction):
 
         self.runner.run(calculation_folder)
 
-        # All factory calls pass software_input to resolve prefix/outdir
+        # All factory calls pass input_files to resolve prefix/outdir
         eigenvalues = self.software_factory.get_eigenvalues(
             base_path=calculation_folder,
-            software_input=self.software_input)
+            software_input=self.input_files)
         fermi_energy = self.software_factory.get_fermi_energy(
             base_path=calculation_folder,
-            software_input=self.software_input)
+            software_input=self.input_files)
         atoms_map = self.software_factory.get_atoms_map(
             base_path=calculation_folder,
-            software_input=self.software_input)
+            software_input=self.input_files)
         num_bands = self.software_factory.get_number_of_bands(
             base_path=calculation_folder,
-            software_input=self.software_input)
+            software_input=self.input_files)
         band_projection_file = self.software_factory.get_band_projection_class(
             base_path=calculation_folder,
-            software_input=self.software_input)
+            software_input=self.input_files)
 
         band_structure = BandStructure(eigenvalues, fermi_energy, atoms_map,
                                        num_bands, band_projection_file)
@@ -670,12 +664,16 @@ class QECorrection(Correction):
             shutil.rmtree(name)
         os.mkdir(name)
 
-        for atom in self.atoms:
-            upf_filename = f"{atom}.upf"
-            src  = os.path.join(self.potential_folder, upf_filename)
-            dest = os.path.join(name, upf_filename)
-            shutil.copyfile(src, dest)
-
+        # Loop through input_files, skipping the first item
+        for upf in self.input_files[1:]:
+            src  = os.path.join(self.potential_folder, upf)
+            dest = os.path.join(name, upf)
+            try:
+                shutil.copyfile(src, dest)
+            except FileNotFoundError as e:
+                raise FileNotFoundError(
+                    f"{e}. Check if the potential_folder is correctly given in the configuration file."
+                )
     # ------------------------------------------------------------------ #
     #  Correction loop — mirrors DFTCorrection._find_best_correction       #
     # ------------------------------------------------------------------ #

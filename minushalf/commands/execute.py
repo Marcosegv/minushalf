@@ -137,6 +137,7 @@ def execute(quiet: bool):
     conduction_cuts = None
 
     if "v" in correction_code:
+        print(valence_options)
         valence_correction = correction(**valence_options)
         valence_cuts, valence_gap = valence_correction.execute()
         gap = valence_gap

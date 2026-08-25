@@ -12,6 +12,7 @@ from minushalf.utils.cut_initial_guess_methods import (CutInitialGuessMethods)
 from minushalf.utils.band_structure import BandStructure
 from minushalf.utils.projection_to_df import projection_to_df
 from minushalf.utils.software_output import get_output_filenames
+from minushalf.utils.software_input import get_input_filenames
 
 
 def _get_vbm_projection(factory: SoftwaresAbstractFactory, is_indirect: bool, filenames: list) -> pd.DataFrame:
@@ -211,7 +212,6 @@ def get_potential_filename(minushalf_yaml: MinushalfYaml, atom: dict):
     potential_filename = filenames["potential"]
 
     return potential_filename
-    
 
 def get_valence_correction_params(
     minushalf_yaml: MinushalfYaml,
@@ -241,10 +241,7 @@ def get_valence_correction_params(
     params["correction_type"] = "valence"
     params["is_conduction"] = False
     params["indirect"] = minushalf_yaml.get_indirect()
-    params["input_files"] = [
-        "INCAR", "POSCAR", "KPOINTS", "CHGCAR"
-    ] if params["indirect"] else ["INCAR", "POSCAR", "KPOINTS"]
-
+    params["input_files"] = get_input_filenames(software, input_file, params["indirect"])
     params["correction_indexes"] = _get_valence_correction_indexes(
         correction_code, params["band_projection"], minushalf_yaml.get_fractional_valence_treshold())
     params["potential_filename"] = get_potential_filename(minushalf_yaml, params["correction_indexes"])
@@ -285,9 +282,7 @@ def get_conduction_correction_params(
     params["correction_type"] = "conduction"
     params["is_conduction"] = True
     params["indirect"] = minushalf_yaml.get_indirect()
-    params["input_files"] = [
-        "INCAR", "POSCAR", "KPOINTS", "CHGCAR"
-    ] if params["indirect"] else ["INCAR", "POSCAR", "KPOINTS"]
+    params["input_files"] = get_input_filenames(software, input_file, params["indirect"])
     params["correction_indexes"] = _get_conduction_correction_indexes(
         correction_code, params["band_projection"], minushalf_yaml.get_fractional_conduction_treshold())
     params["potential_filename"] = get_potential_filename(minushalf_yaml, params["correction_indexes"])

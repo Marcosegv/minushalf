@@ -11,7 +11,7 @@ from minushalf.softwares.software_abstract_factory import SoftwaresAbstractFacto
 class BandStructure():
     """
     Extact band structure insights from
-    VASP classes
+    factory classes
     """
 
     def __init__(self, eigenvalues: dict, fermi_energy: float, atoms_map: dict,
