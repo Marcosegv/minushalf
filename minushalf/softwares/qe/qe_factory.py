@@ -142,6 +142,7 @@ class QE(SoftwaresAbstractFactory):
         pw_command: List[str],
         projwfc_command: List[str],
         input_file: str,
+        **kwargs
     ):
         """
         Return the class that runs the Quantum ESPRESSO workflow.

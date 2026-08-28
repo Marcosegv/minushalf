@@ -44,7 +44,8 @@ class InputFile:
                  description: str = "",
                  last_lines: list = None,
                  software: str = "VASP",
-                 cut: float = 0.0) -> None:
+                 cut: float = 0.0,
+                 file_pseudo: str = "NewPseudo.UPF") -> None:
         """
         Args:
             chemical_symbol (str): Symbol of the chemical element (H, He, Li...)
@@ -86,6 +87,7 @@ class InputFile:
             self.last_lines = []
         else:
             self.last_lines = last_lines
+        self.file_pseudo = file_pseudo
 
     @property
     def chemical_symbol(self) -> str:
@@ -289,8 +291,8 @@ class InputFile:
         lines.append("&input\n")
         lines.append(f"  title='{self.chemical_symbol}',\n")
         lines.append(f"  zed={zed},\n")
-        lines.append(f"  config='{config}',\n")
-        lines.append(f"  dft='{dft}'\n")
+        lines.append(f"  config='{config[0]}',\n")
+        lines.append(f"  dft='{dft.upper()}'\n")
         lines.append("  iswitch=4\n")
         lines.append("/\n")
 
@@ -310,9 +312,9 @@ class InputFile:
         config_half = self._build_half_config(self.chemical_symbol)
 
         lines.append("&test\n")
-        lines.append("  file_pseudo='NewPseudo.UPF',\n")
+        lines.append(f"  file_pseudo='{self.file_pseudo}',\n")
         lines.append(f"  file_pseudopw='{self.chemical_symbol}-05.upf.temp',\n")
-        lines.append(f"  configts(1)='{config_gs}',\n")
+        lines.append(f"  configts(1)='{config_gs[1]}',\n")
         lines.append(f"  configts(2)='{config_half}',\n")
         lines.append(f"  rcutv={self.cut}\n")
         lines.append("/\n")
@@ -351,7 +353,10 @@ class InputFile:
             occ_str = f"{int(occ)}" if occ == int(occ) else f"{occ:.1f}"
             parts.append(f"{n}{_L_LABELS[l]}{occ_str}")
 
-        return core_str + " ".join(parts)
+        core_format = core_str + " ".join(parts)
+        valence_format = " ".join(parts)
+
+        return [core_format, valence_format]
 
 
     @staticmethod
@@ -394,7 +399,7 @@ class InputFile:
                     else f"{orb['occ']:.1f}")
             parts.append(f"{orb['n']}{_L_LABELS[orb['l']]}{occ_str}")
 
-        return core_str + " ".join(parts)
+        return " ".join(parts)
 
 #### END Of Suported Softwares ####
 
@@ -576,7 +581,8 @@ class InputFile:
                       exchange_correlation_code: str,
                       maximum_iterations: int = 100,
                       calculation_code: str = "ae",
-                      software: str = "VASP", cut: float = 0.0) -> any:
+                      software: str = "VASP", cut: float = 0.0,
+                      file_pseudo: str = "NewPseudo.UPF") -> any:
         """
         Create INP file with minimum setup.
 
@@ -602,6 +608,8 @@ class InputFile:
             cut,
             "exchange_correlation_code":
             exchange_correlation_code,
+            "file_pseudo":
+            file_pseudo,
             "calculation_code":
             calculation_code,
             "chemical_symbol":

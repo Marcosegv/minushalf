@@ -45,7 +45,7 @@ def test_to_list_qe():
 
     parameters_list = software_configurations.to_list()
 
-    assert parameters_list == [None, None, None]
+    assert parameters_list == [None, None, None, None, None]
 
 def test_to_dict():
     """

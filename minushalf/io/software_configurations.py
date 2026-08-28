@@ -136,6 +136,8 @@ class SoftwareConfigurations(MinushalfYamlTags):
             return [
                 self.pw_command,
                 self.projwfc_command,
+                self.ld1_command,
+                self.virtual_v2_command,
                 self.input_file,
             ]
 
@@ -159,5 +161,7 @@ class SoftwareConfigurations(MinushalfYamlTags):
             return {
                 "pw_command": self.pw_command,
                 "projwfc_command": self.projwfc_command,
+                "ld1_command": self.ld1_command,
+                "virtual_v2_command": self.virtual_v2_command,
                 "input_file": self.input_file,
             }

@@ -251,6 +251,7 @@ def get_valence_correction_params(
     params["divide_character"] = _get_divide_character(
         minushalf_yaml.get_divide_character(), params["correction_indexes"],
         software_factory)
+    params["commands"] = minushalf_yaml.get_software_configurations_params()
 
     return params
 
@@ -293,5 +294,6 @@ def get_conduction_correction_params(
     params["divide_character"] = _get_divide_character(
         minushalf_yaml.get_divide_character(), params["correction_indexes"],
         software_factory)
+    params["commands"] = minushalf_yaml.get_software_configurations_params()
 
     return params
